@@ -4,13 +4,12 @@ from core.Request import Request
 from core.MetaMap import MetaMap
 from core.ApplicationContext import ApplicationContext
 
-from library.Log import Log
-import threading, asyncio
+import threading
 
 from cq.Event import Event as CQEvent
 from h5.Event import Event as H5Event
 
-from tools.SocketUtil import SocketUtil
+from library.SocketUtil import SocketUtil
 
 def picture2base(path):
     import base64
@@ -74,9 +73,9 @@ class Dispatcher():
             self.response.modeImage("favicon.ico")
 
             # 加载图片
-            #with open(r"static/round.jpeg", 'rb') as fp:
+            #with open(r"static/favicon.jpeg", 'rb') as fp:
             #    self.response.text.append(fp.read())
-            self.response.text.append(picture2base("static/round.jpeg"))
+            self.response.text.append(picture2base("static/favicon.jpeg"))
 
             return None
 

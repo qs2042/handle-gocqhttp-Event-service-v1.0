@@ -24,7 +24,7 @@ from cq.API import API as RQAPI
 rqAPI = RQAPI()
 
 import time, random, json, requests
-from tools import PythonUtil
+from library.PythonUtil import PythonUtil
 from cq.CQCode import CQCode
 excludeList = [
     "time", "random", "json", "requests", 

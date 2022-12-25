@@ -4,12 +4,12 @@ import requests, re, json
 
 class ApplicationContext: 
     def __init__(self) -> None:
-        # 插件
+        # 插件, 事件, 官方库
         self.loadPlugins()
+        self.loadEvent()
+        self.loadLibrary()
 
-        # 包
-        self.loadPlugins()
-
+        # 配置文件
         self.loadBootstrap()
         
     def loadPlugins(self):
@@ -26,7 +26,15 @@ class ApplicationContext:
         }
 
     def loadEvent(self):
-        self.eventList = {}
+        self.event = {
+            # 视频, 语音, 图片
+            "video": [], "record": [], "image": [],
+
+            # 抖一抖, 
+            "tremble": []
+            
+            # 分享(app), 被@, 被回复, QQ表情
+        }
     
     def loadBootstrap(self):
         self.bootstrap = {}

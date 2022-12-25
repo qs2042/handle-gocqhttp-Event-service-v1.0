@@ -38,8 +38,10 @@ class SocketUtil:
 
         return Request(conn, source)
 
+    @staticmethod
     def sendAll(request: Request, response: Response):
         request.conn.sendall(bytes(response.result(), "utf-8"))
 
+    @staticmethod
     def close(listenSocket: socket):
         listenSocket.close()

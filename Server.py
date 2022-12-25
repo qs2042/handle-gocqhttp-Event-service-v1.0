@@ -1,50 +1,18 @@
 ####################################################
 # library
 ####################################################
-import os, importlib, pickle, json
+import importlib
+import json
+import os
 
-from core.Dispatcher import Dispatcher
-from core.Request import Request
-from core.Response import Response
-from core.MetaMap import MetaMap
 from core.ApplicationContext import ApplicationContext
-
-from tools.SocketUtil import SocketUtil
-from tools import StringUtil
-from tools import PythonUtil
+from core.Dispatcher import Dispatcher
+from core.MetaMap import MetaMap
 
 from library.Log import Log
-
-
-
-'''
-TODO
-1.CQ模块            事件, 特殊消息解析
-2.CQ模块            自定义事件
-3.CQ模块            新版API
-4.@mapping          增加全匹配模式
-5.@order            咕咕咕
-6.@chat_group       咕咕咕
-7.@chat_private     咕咕咕
-8.@jurisdiction     咕咕咕
-9.bootstrap.json    咕咕咕
-
-'''
-
-
-####################################################
-# 路线图
-####################################################
-'''
-QQ -> gocqhttp -> RQ(server) -> RQ(conn -> request)
-↓
-dispatcher
-↓
--> event(h5) -> plugins -> function(api)
--> event(cq) -> plugins -> function(api)
-↓
-response(result)
-'''
+from library.SocketUtil import SocketUtil
+from library.PythonUtil import PythonUtil
+from library.StringUtil import StringUtil
 
 ####################################################
 # Variable
@@ -53,18 +21,19 @@ IP = "127.0.0.1"
 PORT = 5701
 BUFSIZE = 4096
 
-def printInfo() -> None:
-    print("="*30)
-    print("欢迎使用RQ框架")
-    print("="*30)
-    print("""
-    author: R
-    version: v1.0
-    encoding: utf-8
-    introduce: 此项目基于gocqhttp(https://github.com/Mrs4s/go-cqhttp)
-    createTime: 2022-10-8 15:41:59
-    """.strip().replace("    ", ""))
-    print("="*30)
+
+def printInfo():
+    print(f"""
+{'='*30}
+欢迎使用RQ框架
+{'='*30}
+author: R
+version: v1.0
+encoding: utf-8
+introduce: 此项目基于gocqhttp(https://github.com/Mrs4s/go-cqhttp)
+createTime: 2022-10-8 15:41:59
+{'='*30}
+    """.strip())
 
 
 ####################################################
@@ -75,9 +44,8 @@ class Server:
         # 初始化socket对象
         self.listenSocket = SocketUtil.getSocket(IP, PORT)
 
-        self.base= os.getcwd()
-
-        # 日志        
+        # 路径, 日志
+        self.base = os.getcwd()
         self.log = Log("server")
 
         # 容器(request, session, application)
@@ -85,12 +53,11 @@ class Server:
         self.sessionContext = None
         self.applicationContext = ApplicationContext()
 
+        # 加载插件, 配置文件
         self.loadPluings()
         self.loadBootstrap()
 
-    # 加载插件
     def loadPluings(self) -> None:
-
         # isExist = os.path.exists(base + r"/data/plugins.pkl")
         # if isExist:
         #     with open("data.pkl", "rb") as f:
@@ -137,14 +104,13 @@ class Server:
         # with open("data.pkl", "wb") as f:
         #     pickle.dump(self.applicationContext.plugins, f)
         return None
-    
-    # 加载配置文件
+
     def loadBootstrap(self) -> None:
         path = self.base + r"/data/bootstrap.json"
-        if not os.path.exists(path): 
+        if not os.path.exists(path):
             with open(path, "w") as f:
                 f.write("{}")
-        
+
         with open(path, "r") as f:
             self.applicationContext.bootstrap = json.loads(f.read())
         return None
@@ -177,12 +143,11 @@ class Server:
             # self.log.info(list(request.data))
             self.log.info(request.data)
             for n, i in enumerate(response.text):
-                self.log.info(f"({n+1}/{len(response.text)}) {i}")
+                self.log.info(f"({n + 1}/{len(response.text)}) {i}")
             print("\n\n")
 
     def main(self):
         while True: self._run()
-
 
 
 ####################################################
