@@ -1,5 +1,5 @@
 import sqlite3
-
+from Reflection import Reflection, ReflectionUtil
 
 class SQL:
     def __init__(self, sql):
@@ -51,6 +51,26 @@ class SqliteUtil:
     def commit(self):
         self.conn.commit()
 
+
+class t_user:
+    username:str
+    password:str
+    age:int
+    sex:bool = False
+
+    def meta():
+        tableName = ""
+
+'''
+# 连接数据库
+su = SqliteUtil(r"../data/db")
+
+# 创建表格
+su.load(t_user)
+
+# 查数据
+
+'''
 
 
 if __name__ == "__main__":

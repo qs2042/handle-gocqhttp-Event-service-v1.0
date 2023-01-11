@@ -148,7 +148,7 @@ class Event:
         #if data.get("meta_event_type") == "heartbeat":
         #    self.metaMap.isLog = False
         #    isTrigger = True
-        pass
+        return False
 
     def funNotice(self):
         self.showDatabaseNotice(self.messageBean.raw_data)
@@ -227,7 +227,7 @@ class Event:
             if excludeList != None: shieldingWords += excludeList
 
             # 获取方法列表, 并排除掉一些选项
-            l = [x for x in r.getMethods().get("public") if x not in shieldingWords]
+            l = [x for x in r.public.get("function") if x not in shieldingWords]
             
             # 注入数据
             r.setAttribute("request", self.request)
@@ -256,7 +256,9 @@ class Event:
         self.messageBean = MessageBean(self.request.data)
 
         # 元事件, 事件, 请求: TODO
-        if self.messageBean.type == MessageBeanType.META_EVENT: self.funMetaEvent()
+        if self.messageBean.type == MessageBeanType.META_EVENT: 
+            if self.funMetaEvent() == False:
+                return None
         if self.messageBean.type == MessageBeanType.NOTICE: self.funNotice()
         if self.messageBean.type == MessageBeanType.REQUEST: self.funRequest()
 

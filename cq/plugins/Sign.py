@@ -19,11 +19,30 @@ metaMap: MetaMap = None
 applicationContext: ApplicationContext = None
 messageBean: MessageBean = None
 
-excludeList = []
+excludeList = [
+    "QQ"
+]
 
 
 
 @mapping([".sign", "签到"])
 def main(*args, **kwargs):
-    response.text.append(f"@{messageBean.user_nick}({messageBean.user_card}) 恭喜您签到成功")
+    # 获取QQ号
+    print(messageBean.user_id)
+
+    # 获取QQ群
+    print(messageBean.group_id)
+
+    # 获取消息
+    print(messageBean.message)
+    
+    # 获取消息
+    print(kwargs.get("message"))
+    
+
+    # 获取QQ名称 和 QQ群名片
+    r = f"@{messageBean.user_nick}({messageBean.user_card}) 恭喜您签到成功"
+
+    # 返回信息
+    response.text.append(r)
     return True

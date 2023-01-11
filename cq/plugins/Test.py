@@ -48,7 +48,10 @@ def test(*args, **kwargs):
 @mapping("测试视频")
 def testVideo(*args, **kwargs):
     time.sleep(5)
+    print("[测试视频] start")
     response.text.append("(假装是加载了5s的网络视频)")
+    print(response.text)
+    print("[测试视频] end")
     return True
 
 @mapping("测试图片")
