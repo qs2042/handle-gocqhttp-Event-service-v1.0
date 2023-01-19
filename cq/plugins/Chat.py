@@ -1,31 +1,44 @@
-'''
+"""
 author:     R
 encoding:   utf-8
 title:      聊天插件
 version:    1.0
-introduce:  机器人主动聊天 + 被动聊天
-functions:  [本地词库, 图灵123, 青云客]
-time:       2022年11月15日15时34分27秒
-'''
-from library.Decorator import mapping
+introduce:  无可奉告
+qq:         2042136767
+phone:      ...
+time:       2023年1月16日12:28:23
+"""
+# 注解
+from library.Decorator import Meta, Event, Mapping
+
+# Bean
 from core.Request import Request
 from core.Response import Response
-from core.MetaMap import MetaMap
-from core.ApplicationContext import ApplicationContext
 from cq.core.MessageBean import MessageBean
 
+# context
+from core.RequestContext import RequestContext
+from core.SessionContext import SessionContext
+from core.ApplicationContext import ApplicationContext
+
+# 自动注入数据
 request: Request = None
 response: Response = None
-metaMap: MetaMap = None
-applicationContext: ApplicationContext = None
 messageBean: MessageBean = None
 
+requestContext: RequestContext = None
+applicationContext: ApplicationContext = None
+sessionContext: SessionContext = None
+
+# 排除项
+excludeList = []
+
+# 全局变量(Global Variable List)
+gvl = {
+    "qq": "2042136767"
+}
 
 import requests, json
-excludeList = [
-    "requests", "json",
-    "chatThesaurus", "chatTuLing123", "chatQingYunKe"
-]
 
 
 # 聊天(本地词库, 图灵123, 青云客)
@@ -79,19 +92,25 @@ def chatQingYunKe(tmp:str):
 
     data = json.loads(res.text)
 
-    answer = data["content"]
+    answer: str = data["content"]
+
+    if type(answer) == str:
+        answer.replace("夏夏的宠物", "你的小晴")
+        answer.replace("菲菲", "小晴")
 
     return answer
 
 
-
-# 聊天
-@mapping(value = ["#", "聊天"])
+@Event.messageGroup()
+@Mapping.prefix(["#", "聊天"])
 def chat(*args, **kwargs):
-    message = kwargs.get("message")
-    if len(message) == 0: return None
-    isTrigger = False
+    kwargs = kwargs.get("kv")
+    if kwargs == None: return False
 
+    message = kwargs.get("message")
+    if len(message) == 0: return False
+
+    isTrigger = False
     if isTrigger==False: isTrigger = chatThesaurus(message)
     if isTrigger==False: isTrigger = chatTuLing123(message)
     if isTrigger==False: isTrigger = chatQingYunKe(message)

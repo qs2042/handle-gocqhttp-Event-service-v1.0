@@ -1,36 +1,54 @@
-'''
+"""
 author:     R
 encoding:   utf-8
 title:      随机插件
 version:    1.0
-introduce:  解决你的选择困难症
-functions:  帮我选择 [args...], 投掷骰子 [number], 随机美食
-time:       2022年11月15日15时34分27秒
-'''
-from library.Decorator import mapping
+introduce:  无可奉告
+qq:         2042136767
+phone:      ...
+time:       2023年1月16日12:28:23
+"""
+# 注解
+from library.Decorator import Meta, Event, Mapping
+
+# Bean
 from core.Request import Request
 from core.Response import Response
-from core.MetaMap import MetaMap
-from core.ApplicationContext import ApplicationContext
 from cq.core.MessageBean import MessageBean
 
+# context
+from core.RequestContext import RequestContext
+from core.SessionContext import SessionContext
+from core.ApplicationContext import ApplicationContext
+
+# 自动注入数据
 request: Request = None
 response: Response = None
-metaMap: MetaMap = None
-applicationContext: ApplicationContext = None
 messageBean: MessageBean = None
 
+requestContext: RequestContext = None
+applicationContext: ApplicationContext = None
+sessionContext: SessionContext = None
+
+# 排除项
+excludeList = []
+
+# 全局变量(Global Variable List)
+gvl = {
+    "qq": "2042136767"
+}
 
 import random
-excludeList = [
-    "random"
-]
-
-
 
 # 选择困难症
-@mapping([".helpMeChoose", "帮我选择"])
+@Event.messageGroup()
+@Mapping.prefix([".helpMeChoose", "帮我选择"])
 def helpMeChoose(*args, **kwargs):
+    kwargs: dict = kwargs.get("kv")
+    if type(kwargs) != dict: 
+        response.text.append("出现未知错误")
+        return None
+    
     message:str = kwargs.get("message")
     if (len(message) == 0):
         response.text.append("指令缺少参数, 正确格式请参照文档: null")
@@ -46,8 +64,14 @@ def helpMeChoose(*args, **kwargs):
     return True
 
 # 投掷骰子
-@mapping([".roll", "投掷骰子"])
+@Event.messageGroup()
+@Mapping.prefix([".roll", "投掷骰子"])
 def roll(*args, **kwargs):
+    kwargs: dict = kwargs.get("kv")
+    if type(kwargs) != dict: 
+        response.text.append("出现未知错误")
+        return None
+
     message:str = kwargs.get("message")
     print(message)
     print(len(message))
@@ -67,7 +91,8 @@ def roll(*args, **kwargs):
 
 
 # 随机美食
-@mapping(value="随机食物")
+@Event.messageGroup()
+@Mapping.all("随机食物")
 def food(*args, **kwargs):
     l = {
         "肠粉":"暂无介绍",

@@ -1,29 +1,27 @@
 # 介绍
 项目依赖于gocq-http  
 
-0.处理流程
+## 处理流程
 ```text
-QQ -> gocqhttp -> RQ(server) -> RQ(conn -> request)
+QQ
+↓
+gocqhttp
+↓
+RQ(server)
+-> request(socket.conn)
+-> requestContext, sessionContext, applicationContext
+-> plugins, bootstrap
 ↓
 dispatcher
-↓
--> event(h5) -> plugins -> function(api)
--> event(cq) -> plugins -> function(api)
-↓
-response(result)
+-> event(h5).plugins.function(api) -> response
+-> event(cq).plugins.function(api) -> response
 ```
 
-1.TODO
+## TODO
 ```text
-1.CQ模块            事件, 特殊消息解析
-2.CQ模块            自定义事件
-3.CQ模块            新版API
-4.@mapping          增加全匹配模式
-5.@order            咕咕咕
-6.@chat_group       咕咕咕
-7.@chat_private     咕咕咕
-8.@jurisdiction     咕咕咕
-9.bootstrap.json    咕咕咕
+
+
+
 ```
 
 
@@ -55,4 +53,19 @@ servers:
 
 3.运行本项目中的Server.py文件
 
+
+# 使用教程
+
+## 启动项目
+运行Server.py
+
+## 测试
+运行Test.py
+
+## 编写插件
+```python
+
+cq/plugins/xxx.py
+
+```
 

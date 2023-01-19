@@ -4,6 +4,14 @@ import inspect, types
 
 class ReflectionUtil:
     @staticmethod
+    def isModule(variable):
+        return type(variable) == types.ModuleType
+
+    @staticmethod
+    def isClass(variable):
+        return type(variable) == type
+    
+    @staticmethod
     def isFunction(variable):
         '''判断是否为方法'''
         a1 = isinstance(variable, types.FunctionType)
@@ -31,13 +39,14 @@ class Reflection:
     def __init__(self, targetObject) -> None:
         self.obj = targetObject
 
-        self.python = { "function": {}, "variable": {} }
-        self.hidden = { "function": {}, "variable": {} }
-        self.public = { "function": {}, "variable": {} }
+        self.python = { "module": {}, "class": {}, "function": {}, "variable": {} }
+        self.hidden = { "module": {}, "class": {}, "function": {}, "variable": {} }
+        self.public = { "module": {}, "class": {}, "function": {}, "variable": {} }
         self.all = {}
-        self.__analysis(self.obj.__dict__)
+        self.__analysis()
 
-    def __analysis(self, data: dict):
+    def __analysis(self):
+        data = self.obj.__dict__
         self.all = dict(data)
         for k in data:
             v = data.get(k)
@@ -45,14 +54,20 @@ class Reflection:
 
             if k[:2] == "__":
                 if ReflectionUtil.isFunction(v): vType = "function"
+                if ReflectionUtil.isClass(v): vType = "class"
+                if ReflectionUtil.isModule(v): vType = "module"
                 self.python[vType][k] = v
                 continue
             if k[:1] == "_":
                 if ReflectionUtil.isFunction(v): vType = "function"
+                if ReflectionUtil.isClass(v): vType = "class"
+                if ReflectionUtil.isModule(v): vType = "module"
                 self.hidden[vType][k] = v
                 continue
             
             if ReflectionUtil.isFunction(v): vType = "function"
+            if ReflectionUtil.isClass(v): vType = "class"
+            if ReflectionUtil.isModule(v): vType = "module"
             self.public[vType][k] = v
         return None
     
@@ -66,13 +81,16 @@ class Reflection:
     # 设置类成员
     def setAttribute(self, attributeName:str, value):
         self.obj.__setattr__(attributeName, value)
+        self.__analysis()
 
     # 删除类成员
-    def delAttribute(self, attributeName:str):
+    def delAttribute(self, attributeName:str) -> bool:
         try:
-            return self.obj.__delattr__(attributeName)
+            self.obj.__delattr__(attributeName)
+            self.__analysis()
+            return True
         except:
-            return None
+            return False
 
 
 if __name__ == "__main__":

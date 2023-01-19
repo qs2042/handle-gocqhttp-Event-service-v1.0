@@ -1,18 +1,24 @@
 ####################################################
 # library
 ####################################################
+# base
 import importlib
 import json
 import os
 
+# context
+from core.RequestContext import RequestContext
+from core.SessionContext import SessionContext
 from core.ApplicationContext import ApplicationContext
+# 
 from core.Dispatcher import Dispatcher
-from core.MetaMap import MetaMap
-
+# utils
 from library.Log import Log
+from library.Counter import Counter
 from library.SocketUtil import SocketUtil
 from library.PythonUtil import PythonUtil
 from library.StringUtil import StringUtil
+
 
 ####################################################
 # Variable
@@ -44,28 +50,24 @@ class Server:
         # 初始化socket对象
         self.listenSocket = SocketUtil.getSocket(IP, PORT)
 
-        # 路径, 日志
-        self.base = os.getcwd()
+        # ...
         self.log = Log("server")
+        self.counter = Counter()
 
+    def __loadContainer(self) -> None:
+        '''
+        request         当前请求后销毁
+        session         指定某时间销毁
+        application     程序关闭后销毁
+        '''
         # 容器(request, session, application)
-        self.metaMap = MetaMap()
-        self.sessionContext = None
+        self.requestContext = RequestContext()
+        self.sessionContext = SessionContext()
         self.applicationContext = ApplicationContext()
 
-        # 加载插件, 配置文件
-        self.loadPluings()
-        self.loadBootstrap()
-
-    def loadPluings(self) -> None:
-        # isExist = os.path.exists(base + r"/data/plugins.pkl")
-        # if isExist:
-        #     with open("data.pkl", "rb") as f:
-        #         self.applicationContext.plugins = pickle.load(f)
-        #     return None
-
-        cq: list = os.listdir(self.base + r"/cq/plugins")
-        h5: list = os.listdir(self.base + r"/h5/plugins")
+    def __loadPluings(self) -> None:
+        cq: list = os.listdir(self.applicationContext.basePath + r"/cq/plugins")
+        h5: list = os.listdir(self.applicationContext.basePath + r"/h5/plugins")
 
         for i in cq:
             # 如果后缀不是py, 那就直接跳过
@@ -83,7 +85,6 @@ class Server:
 
             # 加载插件
             self.applicationContext.plugins["cq"].append(plugin)
-        print("总共:%d个\n" % len(self.applicationContext.plugins["cq"]))
 
         for i in h5:
             if not StringUtil.equals(i, "py", 2): continue
@@ -99,14 +100,14 @@ class Server:
 
             # 加载插件
             self.applicationContext.plugins["h5"].append(plugin)
-        print("总共:%d个...\n" % len(self.applicationContext.plugins["h5"]))
-
-        # with open("data.pkl", "wb") as f:
-        #     pickle.dump(self.applicationContext.plugins, f)
+        
+        print("CQ插件数量: %d个" % len(self.applicationContext.plugins["cq"]))
+        print("H5插件数量: %d个" % len(self.applicationContext.plugins["h5"]))
+        print()
         return None
 
-    def loadBootstrap(self) -> None:
-        path = self.base + r"/data/bootstrap.json"
+    def __loadBootstrap(self) -> None:
+        path = self.applicationContext.basePath + r"/data/bootstrap.json"
         if not os.path.exists(path):
             with open(path, "w") as f:
                 f.write("{}")
@@ -115,9 +116,20 @@ class Server:
             self.applicationContext.bootstrap = json.loads(f.read())
         return None
 
+    def init(self):
+        # 加载容器
+        self.__loadContainer()
+
+        # 路径
+        self.applicationContext.basePath = os.getcwd()
+
+        # 加载插件/配置文件
+        self.__loadPluings()
+        self.__loadBootstrap()
+
     def _run(self):
         # 初始化元信息
-        self.metaMap.reset()
+        self.requestContext.reset()
 
         # 获取conn数据并封装为Request
         request = SocketUtil.getConn(self.listenSocket, BUFSIZE)
@@ -128,7 +140,7 @@ class Server:
             return None
 
         # 将Request和map交给Dispatcher进行派发
-        response = Dispatcher(request, self.metaMap, self.applicationContext).main()
+        response = Dispatcher(request, self.requestContext, self.sessionContext, self.applicationContext).main()
 
         # 返回数据
         # SocketUtil.sendAll(request, response)
@@ -137,8 +149,9 @@ class Server:
         # SocketUtil.close(self.listenSocket)
 
         # 打印日志
-        if (self.metaMap.isLog and self.metaMap.isTriggerModule != "False"):
-            self.log.info(f"{self.metaMap.isTriggerModule}模块 {request.version} {request.method} {request.url}")
+        if (self.requestContext.isLog and self.requestContext.isTriggerModule != "False"):
+            self.log.info(f"[{self.counter.next()}]")
+            self.log.info(f"{self.requestContext.isTriggerModule}模块 {request.version} {request.method} {request.url}")
             # self.log.info(list(request.headers))
             # self.log.info(list(request.data))
             self.log.info(request.data)
@@ -157,5 +170,7 @@ if __name__ == "__main__":
     printInfo()
 
     s = Server()
+
+    s.init()
 
     s.main()

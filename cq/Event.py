@@ -1,21 +1,28 @@
 from core.Response import Response
 from core.Request import Request
-from core.MetaMap import MetaMap
+
+# context
+from core.RequestContext import RequestContext
+from core.SessionContext import SessionContext
 from core.ApplicationContext import ApplicationContext
 
 from library.Log import Log
 from library.Reflection import Reflection
+from library.Decorator import Data
 
 from cq.API import API
 from cq.core.MessageBean import MessageBean
 from cq.core.MessageBean import Type as MessageBeanType
 
+from library.SocketUtil import SocketUtil
+
 
 class Event:
-    def __init__(self, request: Request, response: Response, metaMap: MetaMap, applicationContext: ApplicationContext) -> None:
+    def __init__(self, request: Request, response: Response, requestContext: RequestContext, sessionContext: SessionContext, applicationContext: ApplicationContext) -> None:
         self.request = request
         self.response = response
-        self.metaMap = metaMap
+        self.requestContext = requestContext
+        self.sessionContext = sessionContext
         self.applicationContext = applicationContext
 
         self.log = Log("CQ-Event")
@@ -143,10 +150,10 @@ class Event:
 
 
     def funMetaEvent(self):
-        self.metaMap.isLog = False
+        self.requestContext.isLog = False
         # 轮询心跳事件
         #if data.get("meta_event_type") == "heartbeat":
-        #    self.metaMap.isLog = False
+        #    self.requestContext.isLog = False
         #    isTrigger = True
         return False
 
@@ -216,36 +223,59 @@ class Event:
             r = Reflection(plugin)
             # 获取排除选项
             excludeList = r.getAttribute("excludeList")
-            shieldingWords = [
-                "excludeList", "mapping",
-                "request", "Request", "response", "Response",
-                "applicationContext", "ApplicationContext", 
-                "metaMap", "MetaMap", 
-                "messageBean", "MessageBean", 
-                "", ""
-            ]
+            shieldingWords = self.applicationContext.plugins.get("shieldingWords")
             if excludeList != None: shieldingWords += excludeList
 
             # 获取方法列表, 并排除掉一些选项
-            l = [x for x in r.public.get("function") if x not in shieldingWords]
+            l = [x for x in r.public.get("variable") if x not in shieldingWords]
             
             # 注入数据
             r.setAttribute("request", self.request)
             r.setAttribute("response", self.response)
-            r.setAttribute("metaMap", self.metaMap)
+            r.setAttribute("requestContext", self.requestContext)
+            r.setAttribute("sessionContext", self.sessionContext)
             r.setAttribute("applicationContext", self.applicationContext)
             r.setAttribute("messageBean", self.messageBean)
+            # print(r.public)
+            # print(l)
 
             # 循环方法列表
-            for i, methodName in enumerate(l):
-                method = r.getAttribute(methodName)
-                # result: None=未触发前缀, True=执行成功, False=执行失败
-                result = method(data.get("message"))
-                if result == True: break
-                # if (result == None): self.log.info(f"{os.path.basename(plugin.__file__)} ({i+1}/{len(l)})未触发前缀: {methodName}")
-                # if (result == True): self.log.info(f"{os.path.basename(plugin.__file__)} ({i+1}/{len(l)})执行成功: {methodName}"); break
-                # if (result == False): self.log.info(f"{os.path.basename(plugin.__file__)} ({i+1}/{len(l)})执行失败: {methodName}")
+            for methodName in l:
+                method: Data = r.getAttribute(methodName)
+                meta = method.get("0")
+                event = method.get("1")
+                func = method.getFunc()
 
+                # 0.判断是否有meta信息
+                if meta == None: pass 
+
+                # 1.判断事件信息是否和CQ事件对上
+                if event == None: continue
+
+                # 2.调用外层的mapping
+                res: Data = func(msg=data.get("message"))
+
+                # 3.mapping执行失败
+                if not res.kwargs["value"]:
+                    #self.log.info(f"执行失败(100) -> {plugin.__name__} -> {methodName}")
+                    continue
+
+                # 4.mapping执行成功
+                status = res.func(kv = res.kwargs)
+                # True=执行成功, False=执行失败, None=继续往下执行
+                if status == False: 
+                    #self.log.info(f"执行失败(101) -> {plugin.__name__} -> {methodName} -> {res.kwargs}")
+                    continue
+
+                if status == None:
+                    #self.log.info(f"执行失败(102) -> {plugin.__name__} -> {methodName} -> {res.kwargs}")
+                    continue
+                
+                if status == True:
+                    print(f"{methodName}: {status}")
+                    #self.log.info(f"执行成功(200) -> {plugin.__name__} -> {methodName} -> {res.kwargs}")
+                    # break 这个只会跳出一层循环
+                    return None
         # 打印日志
         self.showDatabaseMessage(data)
 
@@ -255,10 +285,21 @@ class Event:
         # 包装消息实体类
         self.messageBean = MessageBean(self.request.data)
 
+        # 元事件
+        # self.applicationContext.plugins_cq["0"]
+
+        # 事件
+        # self.applicationContext.plugins_cq["1"]
+
+        # 请求
+        # self.applicationContext.plugins_cq["2"]
+
+        # 消息
+        # self.applicationContext.plugins_cq["3"]
+
         # 元事件, 事件, 请求: TODO
         if self.messageBean.type == MessageBeanType.META_EVENT: 
-            if self.funMetaEvent() == False:
-                return None
+            if self.funMetaEvent() == False: return None
         if self.messageBean.type == MessageBeanType.NOTICE: self.funNotice()
         if self.messageBean.type == MessageBeanType.REQUEST: self.funRequest()
 
@@ -268,5 +309,11 @@ class Event:
             if not self.funSpecial(): self.funMessage()
 
         # 发送信息
-        if self.metaMap.isTriggerModule != "CQTest":
+        if self.requestContext.isTriggerModule != "CQTest":
             self.sendMessage()
+        
+        # 返回数据
+        SocketUtil.sendAll(self.request, self.response)
+
+        if self.requestContext.isTriggerModule == "CQTest":
+            SocketUtil.close(self.request)

@@ -1,43 +1,36 @@
-import requests, re, json
-
-
 
 class ApplicationContext: 
     def __init__(self) -> None:
-        # 插件, 事件, 官方库
+        # 插件
         self.loadPlugins()
-        self.loadEvent()
-        self.loadLibrary()
 
+        # 路径
+        self.basePath = None
+        
         # 配置文件
-        self.loadBootstrap()
+        self.bootstrap = {}
         
     def loadPlugins(self):
         self.plugins = {
             "cq": [],
-            "h5": []
+            "h5": [],
+            "shieldingWords": [
+                # 注解
+                "mapping",
+                # 排除列表
+                "excludeList", 
+                # global variable List
+                "gvl",
+                # bean
+                "request", "Request", 
+                "response", "Response",
+                "messageBean", "MessageBean", 
+                # context
+                "requestContext", "RequestContext",
+                "sessionContext", "SessionContext",
+                "applicationContext", "ApplicationContext", 
+            ]
         }
-
-    def loadLibrary(self):
-        self.library = {
-            "requests": requests,
-            "re": re,
-            "json": json
-        }
-
-    def loadEvent(self):
-        self.event = {
-            # 视频, 语音, 图片
-            "video": [], "record": [], "image": [],
-
-            # 抖一抖, 
-            "tremble": []
-            
-            # 分享(app), 被@, 被回复, QQ表情
-        }
-    
-    def loadBootstrap(self):
-        self.bootstrap = {}
 
     def __str__(self) -> str:
         return str(self.__dict__)

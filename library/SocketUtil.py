@@ -41,7 +41,11 @@ class SocketUtil:
     @staticmethod
     def sendAll(request: Request, response: Response):
         request.conn.sendall(bytes(response.result(), "utf-8"))
-
+    
     @staticmethod
-    def close(listenSocket: socket):
-        listenSocket.close()
+    def close(request: Request):
+        request.conn.close()
+
+    #@staticmethod
+    #def close(listenSocket: socket):
+    #    listenSocket.close()

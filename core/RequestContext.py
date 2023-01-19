@@ -1,6 +1,4 @@
-
-
-class MetaMap:
+class RequestContext:
     def __init__(self) -> None:
         # 是否触发模块, 事件, 功能
         self.isTriggerModule = False

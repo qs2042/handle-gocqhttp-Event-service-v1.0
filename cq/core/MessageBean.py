@@ -8,28 +8,42 @@ class Type:
 
 class MessageBean:
     def __init__(self, raw_data) -> None:
-        # 元事件, 事件, 请求, 消息
+        # 类型, 副类型, 源数据
         self.type:int = None
         self.sub_type:int = None
         self.raw_data:dict = raw_data
         
-        # ...
+        # 群, 消息, 消息ID
         self.group_id:int = None
-
         self.message:str = None
         self.message_id:int = None
 
+        # 用户ID, 用户群名片, 用户网名
         self.user_id:int = None
         self.user_card:str = None
         self.user_nick:str = None
 
         self.a()
     
+    def __repr__(self) -> str:
+        return str(self.__dict__)
+    
     def a(self):
+        # 消息类型
         post_type = self.raw_data.get("post_type")
-        if post_type == "meta_event": self.type = Type.META_EVENT
-        if post_type == "notice": self.type = Type.NOTICE
-        if post_type == "request": self.type = Type.REQUEST
+
+        # 元事件
+        if post_type == "meta_event": 
+            self.type = Type.META_EVENT
+
+        # 事件
+        if post_type == "notice": 
+            self.type = Type.NOTICE
+
+        # 请求
+        if post_type == "request": 
+            self.type = Type.REQUEST
+        
         if post_type == "message": 
             self.type = Type.MESSAGE
             messageType = self.raw_data.get("message_type")

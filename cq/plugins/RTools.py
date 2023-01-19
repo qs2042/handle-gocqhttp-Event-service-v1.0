@@ -1,99 +1,66 @@
-'''
+"""
 author:     R
 encoding:   utf-8
 title:      R的垃圾桶
 version:    1.0
-introduce:  懒得分类的功能就塞这里面了
-functions:  服务器状态, 北京时间, 获取时间戳, 功能列表, 查看功能, 给我点赞, 给我点钱...
-time:       2022年11月15日20:26:26
-'''
-from library.Decorator import mapping
+introduce:  无可奉告
+qq:         2042136767
+phone:      ...
+time:       2023年1月16日12:28:23
+"""
+# 注解
+from library.Decorator import Meta, Event, Mapping
+
+# Bean
 from core.Request import Request
 from core.Response import Response
-from core.MetaMap import MetaMap
-from core.ApplicationContext import ApplicationContext
 from cq.core.MessageBean import MessageBean
 
+# context
+from core.RequestContext import RequestContext
+from core.SessionContext import SessionContext
+from core.ApplicationContext import ApplicationContext
+
+# 自动注入数据
 request: Request = None
 response: Response = None
-metaMap: MetaMap = None
-applicationContext: ApplicationContext = None
 messageBean: MessageBean = None
 
-from cq.API import API as RQAPI
-rqAPI = RQAPI()
+requestContext: RequestContext = None
+applicationContext: ApplicationContext = None
+sessionContext: SessionContext = None
 
-import time, random, json, requests
-from library.PythonUtil import PythonUtil
+# 排除项
+excludeList = []
+
+# 全局变量(Global Variable List)
+gvl = {
+    "qq": "2042136767"
+}
+
+import requests, time, json, random
 from cq.CQCode import CQCode
-excludeList = [
-    "time", "random", "json", "requests", 
-    "PythonUtil",
-    "CQCode", "rqAPI", "RQAPI",
-]
 
 
-
-
-
-# 服务器状态
-@mapping("服务器状态")
+@Event.messageGroup()
+@Mapping.all("服务器状态")
 def serverStatus(*args, **kwargs):
-    r = '''
-    服务器名称: server 2012 R2
-    CPU: XXX
-    Memory: XXX
-    speed: XXX
-    '''.strip().replace("    ", "")
-    response.text.append(r)
+    response.text.append("该功能暂时下架")
     return True
-
-# 获取当前时间
-@mapping(["当前时间", ".time"])
-def cruuentTime(*args, **kwargs):
-    r = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-    response.text.append(r)
-    return True
-
-# 获取当前时间戳
-@mapping("获取时间戳")
-def currentTimeStamp(*args, **kwargs):
-    r = str(time.time())
-    response.text.append(r)
-    return True
-
-# 功能列表/查看
-@mapping([".help", "功能列表"])
-def functionList(*args, **kwargs):
-    plugins = applicationContext.plugins.get("cq")
-    s = ""
-    for i,plugin in enumerate(plugins):
-        data:dict = PythonUtil.analysisDoc(plugin.__doc__)
-        s += f"{i+1}.{data.get('title')}v{data.get('version')} ({data.get('author')}) \n"
-    response.text.append(s[:-1])
-    return True
-@mapping("查看功能")
-def functionSee(*args, **kwargs):
-    title = kwargs.get("message")
-
-    plugins = applicationContext.plugins.get("cq")
-    for plugin in plugins:
-        data:dict = PythonUtil.analysisDoc(plugin.__doc__)
-        if title == data.get("title"):
-            response.text.append(f"已为您获取{title}功能的介绍")
-            response.text.append(f"[{title}]\n作者:{data.get('author')}\n介绍:{data.get('introduce')}\n功能列表:{data.get('functions')}")
-    
-    if len(response.text) == 0:
-        response.text.append(f"{title}功能不存在, 请重新输入")
 
 # 公告列表/查看
-@mapping([".noticeList", "公告列表"])
-def noticeList(*args, **kwargs): return False
-@mapping("查看公告")
-def noticeSee(*args, **kwargs): return False
+@Event.messageGroup()
+@Mapping.all([".noticeList", "公告列表"])
+def noticeList(*args, **kwargs): 
+    return False
 
-# 点歌
-def _chooseSongBase(musicName):
+@Event.messageGroup()
+@Mapping.all("查看公告")
+def noticeSee(*args, **kwargs): 
+    return False
+
+
+def chooseSongBase(musicName):
     url = "https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg"
     params = {
         '_': str(time.time()),
@@ -145,7 +112,7 @@ def _chooseSongBase(musicName):
         "musicPic":musicPic,
     }
     return result
-def _chooseSongDownload(musicMid):
+def chooseSongDownload(musicMid):
     # audio = "http://dl.stream.qqmusic.qq.com/%s.m4a?guid=%s&vkey=%s&uin=&fromtag=66" %\
     #        ("C400"+musicMid, "guid", "vKey")
 
@@ -180,12 +147,19 @@ def _chooseSongDownload(musicMid):
     }
     return result
 
-@mapping(value="点歌")
+@Event.messageGroup()
+@Mapping.prefix("点歌")
 def chooseSong(*args, **kwargs):
-    musicName = kwargs.get("message")
+    try:
+        musicName = kwargs["kv"]["message"]
+    except:
+        response.text.append("缺少音乐名")
+        return None
 
-    music = _chooseSongBase(musicName)
-    if music == "False": return "False"
+    music = chooseSongBase(musicName)
+    if music == "False": 
+        response.text.append("获取音乐信息失败")
+        return False
     musicDocid = music["musicDocid"] # musicId = music["id"]
     musicMid = music["musicMid"]
     musicName = music["musicName"]
@@ -193,8 +167,10 @@ def chooseSong(*args, **kwargs):
     musicUrl = music["musicUrl"]
     musicPic = music["musicPic"]
 
-    musicDownload = _chooseSongDownload(musicMid)
-    if musicDownload == "False": return "False"
+    musicDownload = chooseSongDownload(musicMid)
+    if musicDownload == "False": 
+        response.text.append("获取音乐下载链接失败")
+        return False
     musicAudio = musicDownload["dlAudio"]
 
     #print(musicDownload)
@@ -213,9 +189,17 @@ def chooseSong(*args, **kwargs):
     response.text.append(result)
     return True
 
-@mapping(["跟我说", "发语音"])
+@Event.messageGroup()
+@Mapping.prefix(["跟我说", "发语音"])
 def tellMe(*args, **kwargs):
-    result = kwargs.get("message")
+    try:
+        result = kwargs["kv"]["message"]
+        if result == "":
+            response.text.append("缺少关键词")
+            return None
+    except:
+        response.text.append("未知错误")
+        return None
 
     data = request.data
     switch = False
@@ -247,16 +231,66 @@ def tellMe(*args, **kwargs):
     response.text.append(res)
     return True
 
-@mapping(".ra")
+@Event.messageGroup()
+@Mapping.prefix(["随机表情", "给我一个脸色"])
+def face(*args, **kwargs):
+    try:
+        result = kwargs["kv"]["message"]
+    except:
+        response.text.append("未知错误")
+        return None
+
+    # 调用方法
+    res = CQCode.face(result)
+    if res == False:return res
+    
+    response.text.append(res)
+    return True
+
+@Event.messageGroup()
+@Mapping.prefix(["戳一戳"])
+def poke(*args, **kwargs):
+    try:
+        result = kwargs["kv"]["message"]
+        # TODO: 如果未指定, 那么就随机抽取群友戳一戳
+        if result == "":
+            response.text.append("未指定一位好友")
+            return None
+    except:
+        response.text.append("未知错误")
+        return None
+
+    # 调用方法
+    res = CQCode.poke(result)
+    if res == False:return res
+    
+    response.text.append(res)
+    return True
+
+@Event.messageGroup()
+@Mapping.prefix("给我点钱")
+def giveMeSomeMoney(*args, **kwargs):
+    # 来自阿白想要的功能
+    n = random.randint(1, 20)
+    response.text.append(CQCode.face("158") * n)
+    return True
+
+
+@Event.messageGroup()
+@Mapping.prefix(".ra")
 def ra(*args, **kwargs):
-    result:str = kwargs.get("message")
+    try:
+        result = kwargs["kv"]["message"]
+    except:
+        response.text.append("未知错误")
+        return None
     
     # 调用方法
     res = "[name]进行[event]检定:\nD[number]=[random]/[number] [result]"
 
     arrayList = result.split(" ")
     if len(arrayList) < 2:
-        response.text.append("格式不正确")
+        response.text.append("格式不正确, 请按照这个模板进行使用: .ra 写作业 100")
         return False
 
     event = arrayList[0]
@@ -297,35 +331,4 @@ def ra(*args, **kwargs):
     
 
     response.text.append(res)
-    return True
-
-@mapping(["随机表情", "给我一个脸色"])
-def face(*args, **kwargs):
-    result:str = kwargs.get("message")
-
-    # 调用方法
-    res = CQCode.face(result)
-    if res == False:return res
-    
-    response.text.append(res)
-    return True
-
-@mapping(["戳一戳"])
-def poke(*args, **kwargs):
-    result:str = kwargs.get("message")
-    # TODO: 如果未指定, 那么就随机抽取群友戳一戳
-    if result == '': return False
-
-    # 调用方法
-    res = CQCode.poke(result)
-    if res == False:return res
-    
-    response.text.append(res)
-    return True
-
-@mapping("给我点钱")
-def giveMeSomeMoney(*args, **kwargs):
-    # 来自阿白想要的功能
-    n = random.randint(0, 10)
-    response.text.append(CQCode.face("158") * n)
     return True

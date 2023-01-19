@@ -30,7 +30,7 @@ class Response:
 
     def result(self):
         r = "<br>".join(str(x) for x in self._getText())
-        res = f"{self.agreement}/{self.version} {self.statusCode} OK \n{self._getHeaders()}\r\n\r\n {r}"
+        res = f"{self.agreement}/{self.version} {self.statusCode} OK \n{self._getHeaders()}\r\n\r\n{r}"
         return res
 
     def modeText(self):
@@ -38,7 +38,21 @@ class Response:
     
     def modeImage(self, fileName):
         self.headers = {
-            "Content-Type": "image/x-icon",
+            # 压缩媒体类型
+            "Content-Encoding": "gzip/trunked/base64",
+            #Content-Language(描述旨在为观众的语言)
+            #Content-Length 
+            #Content-Location 
+            #Content-MD5 
+            #Content-Range 
+            #Content-Type 
+            #Expires 
+            #Last-Modified 
+            #extension-header
+
+            # 正常
+            #"Content-Type": "image/x-icon",
+            "Content-Type": "image/jpeg",
             "Accept-Ranges": "bytes",
             "Pragma": "no-cache",
             "Cache-Control": "no-cache",

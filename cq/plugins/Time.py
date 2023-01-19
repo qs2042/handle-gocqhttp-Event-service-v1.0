@@ -1,7 +1,7 @@
 """
 author:     R
 encoding:   utf-8
-title:      签到插件
+title:      时间插件
 version:    1.0
 introduce:  无可奉告
 qq:         2042136767
@@ -37,25 +37,19 @@ excludeList = []
 gvl = {
     "qq": "2042136767"
 }
-
+import time
 
 @Event.messageGroup()
-@Mapping.all([".sign", "签到"])
-def main(*args, **kwargs):
-    print(messageBean)
-    print(request)
-    # 获取QQ号
-    print(messageBean.user_id)
-
-    # 获取QQ群
-    print(messageBean.group_id)
-
-    # 获取消息
-    print(messageBean.message)
-
-    # 获取QQ名称 和 QQ群名片
-    r = f"@{messageBean.user_nick}({messageBean.user_id}) 恭喜您签到成功"
-
-    # 返回信息
+@Mapping.all(["当前时间", ".time"])
+def cruuentTime(*args, **kwargs):
+    r = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
     response.text.append(r)
     return True
+
+@Event.messageGroup()
+@Mapping.all("当前时间戳")
+def currentTimeStamp(*args, **kwargs):
+    r = str(time.time())
+    response.text.append(r)
+    return True
+

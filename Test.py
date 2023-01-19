@@ -6,6 +6,7 @@ import requests
 
 
 
+
 qq = "2042136767"
 robotQQ = "2803197643"
 group = "123456789"
@@ -33,14 +34,13 @@ data = {
         'age': 0, 'nickname': 'TEST', 'sex': 'unknown', 'user_id': qq
     }
 }
-
-
 while True:
     i = input("[text] ")
-
     data["message"] = i
     data["raw_message"] = i
     try:
-        requests.post("http://localhost:5701", headers=headers, json=data, timeout=1)
+        res = requests.post("http://localhost:5701", headers=headers, json=data)
+        l = res.text.split("<br>")
+        print("\n".join(l), "\n")
     except:
-        pass
+        print("出现异常\n")

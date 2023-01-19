@@ -1,33 +1,46 @@
-'''
+"""
 author:     R
 encoding:   utf-8
 title:      GPT插件
 version:    1.0
 introduce:  https://gpt.chatapi.art/
 functions:  AI [message]
-time:       2022年11月15日15时34分27秒
-'''
-from library.Decorator import mapping
+qq:         2042136767
+phone:      ...
+time:       2023年1月16日12:28:23
+"""
+# 注解
+from library.Decorator import Meta, Event, Mapping
+
+# Bean
 from core.Request import Request
 from core.Response import Response
-from core.MetaMap import MetaMap
-from core.ApplicationContext import ApplicationContext
 from cq.core.MessageBean import MessageBean
 
+# context
+from core.RequestContext import RequestContext
+from core.SessionContext import SessionContext
+from core.ApplicationContext import ApplicationContext
+
+# 自动注入数据
 request: Request = None
 response: Response = None
-metaMap: MetaMap = None
-applicationContext: ApplicationContext = None
 messageBean: MessageBean = None
+
+requestContext: RequestContext = None
+applicationContext: ApplicationContext = None
+sessionContext: SessionContext = None
+
+# 排除项
+excludeList = []
+
+# 全局变量(Global Variable List)
+gvl = {
+    "qq": "2042136767"
+}
 
 import requests, datetime, json
 from cq.API import API as RQAPI
-rqAPI = RQAPI()
-
-excludeList = [
-    "requests", "datetime", "json",
-    "rqAPI", "RQAPI"
-]
 
 def _GPT(InPut):
     api = "https://gpt.chatapi.art/backend-api/conversation"
@@ -85,25 +98,33 @@ def _GPT(InPut):
         print(r.text)
         return False
 
-@mapping("AI")
+@Event.messageGroup()
+@Mapping.prefix(".AI")
 def ai(*args, **kwargs):
+    if kwargs.get("114151") == None:
+        response.text.append("目前GPT插件暂时下架")
+        return None
     # 获取截取指令后的参数
+    kwargs = kwargs.get("kv")
     text = kwargs.get('message')
 
     # 数据校验
     if len(text) <= 1: return response.text.append("参数不可小于等于1")
 
     # 使用API主动发送消息
-    rqAPI.sendMessage(messageBean.raw_data.get("message_type"), messageBean.user_id, messageBean.group_id, "该功能需要等待1~2分钟")
+    # rqAPI = RQAPI()
+    # rqAPI.sendMessage(messageBean.raw_data.get("message_type"), messageBean.user_id, messageBean.group_id, "该功能需要等待1~2分钟")
 
     # 功能
-    r = _GPT(text)
+    try:
+        r = _GPT(text)
 
-    # 将消息交给框架统一进行发送
-    if r == False: response.text.append("出现网络错误, 请过会重新尝试")
-    if r != False: response.text.append(r)
+        # 将消息交给框架统一进行发送
+        if r == False: response.text.append("出现网络错误, 请过会重新尝试")
+        if r != False: response.text.append(r)
+    except:
+        response.text.append("出现未知错误, 请过会重新尝试")
 
-    # None=未触发前缀(当前请求继续执行其他插件方法)
-    # True=执行成功(当前请求不再执行其他插件方法)
-    # False=执行失败(当前请求继续执行其他插件方法)
+    
+
     return True
