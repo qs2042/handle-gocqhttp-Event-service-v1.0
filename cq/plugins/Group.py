@@ -45,10 +45,7 @@ from cq.API import API as RQAPI
 @Event.messageGroup()
 @Mapping.prefix("禁我")
 def banMe(*args, **kwargs):
-    kwargs: dict = kwargs.get("kv")
-    if type(kwargs) != dict: 
-        response.text.append("出现未知错误")
-        return None
+    kwargs.update(kwargs.get("kv"))
     
     message = kwargs.get("message")
     groupId = messageBean.group_id

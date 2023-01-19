@@ -105,7 +105,7 @@ def ai(*args, **kwargs):
         response.text.append("目前GPT插件暂时下架")
         return None
     # 获取截取指令后的参数
-    kwargs = kwargs.get("kv")
+    kwargs.update(kwargs.get("kv"))
     text = kwargs.get('message')
 
     # 数据校验

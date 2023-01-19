@@ -44,10 +44,7 @@ import random
 @Event.messageGroup()
 @Mapping.prefix([".helpMeChoose", "帮我选择"])
 def helpMeChoose(*args, **kwargs):
-    kwargs: dict = kwargs.get("kv")
-    if type(kwargs) != dict: 
-        response.text.append("出现未知错误")
-        return None
+    kwargs.update(kwargs.get("kv"))
     
     message:str = kwargs.get("message")
     if (len(message) == 0):
@@ -67,10 +64,7 @@ def helpMeChoose(*args, **kwargs):
 @Event.messageGroup()
 @Mapping.prefix([".roll", "投掷骰子"])
 def roll(*args, **kwargs):
-    kwargs: dict = kwargs.get("kv")
-    if type(kwargs) != dict: 
-        response.text.append("出现未知错误")
-        return None
+    kwargs.update(kwargs.get("kv"))
 
     message:str = kwargs.get("message")
     print(message)

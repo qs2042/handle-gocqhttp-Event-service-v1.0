@@ -104,8 +104,7 @@ def chatQingYunKe(tmp:str):
 @Event.messageGroup()
 @Mapping.prefix(["#", "聊天"])
 def chat(*args, **kwargs):
-    kwargs = kwargs.get("kv")
-    if kwargs == None: return False
+    kwargs.update(kwargs.get("kv"))
 
     message = kwargs.get("message")
     if len(message) == 0: return False

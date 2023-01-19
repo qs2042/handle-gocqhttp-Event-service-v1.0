@@ -150,9 +150,10 @@ def chooseSongDownload(musicMid):
 @Event.messageGroup()
 @Mapping.prefix("点歌")
 def chooseSong(*args, **kwargs):
-    try:
-        musicName = kwargs["kv"]["message"]
-    except:
+    kwargs.update(kwargs.get("kv"))
+
+    musicName = kwargs.get("message")
+    if musicName == "":
         response.text.append("缺少音乐名")
         return None
 
@@ -192,13 +193,11 @@ def chooseSong(*args, **kwargs):
 @Event.messageGroup()
 @Mapping.prefix(["跟我说", "发语音"])
 def tellMe(*args, **kwargs):
-    try:
-        result = kwargs["kv"]["message"]
-        if result == "":
-            response.text.append("缺少关键词")
-            return None
-    except:
-        response.text.append("未知错误")
+    kwargs.update(kwargs.get("kv"))
+
+    result = kwargs.get("message")
+    if result == "":
+        response.text.append("缺少关键词")
         return None
 
     data = request.data
@@ -234,10 +233,11 @@ def tellMe(*args, **kwargs):
 @Event.messageGroup()
 @Mapping.prefix(["随机表情", "给我一个脸色"])
 def face(*args, **kwargs):
-    try:
-        result = kwargs["kv"]["message"]
-    except:
-        response.text.append("未知错误")
+    kwargs.update(kwargs.get("kv"))
+
+    result = kwargs.get("message")
+    if result == "":
+        response.text.append("缺少关键词")
         return None
 
     # 调用方法
@@ -250,14 +250,12 @@ def face(*args, **kwargs):
 @Event.messageGroup()
 @Mapping.prefix(["戳一戳"])
 def poke(*args, **kwargs):
-    try:
-        result = kwargs["kv"]["message"]
-        # TODO: 如果未指定, 那么就随机抽取群友戳一戳
-        if result == "":
-            response.text.append("未指定一位好友")
-            return None
-    except:
-        response.text.append("未知错误")
+    kwargs.update(kwargs.get("kv"))
+
+    result = kwargs.get("message")
+    # TODO: 如果未指定, 那么就随机抽取群友戳一戳
+    if result == "":
+        response.text.append("缺少关键词")
         return None
 
     # 调用方法
@@ -275,14 +273,14 @@ def giveMeSomeMoney(*args, **kwargs):
     response.text.append(CQCode.face("158") * n)
     return True
 
-
 @Event.messageGroup()
 @Mapping.prefix(".ra")
 def ra(*args, **kwargs):
-    try:
-        result = kwargs["kv"]["message"]
-    except:
-        response.text.append("未知错误")
+    kwargs.update(kwargs.get("kv"))
+
+    result = kwargs.get("message")
+    if result == "":
+        response.text.append("缺少关键词")
         return None
     
     # 调用方法

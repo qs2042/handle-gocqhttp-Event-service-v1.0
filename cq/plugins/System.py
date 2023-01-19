@@ -1,7 +1,7 @@
 """
 author:     R
 encoding:   utf-8
-title:      XX插件
+title:      框架
 version:    1.0
 introduce:  无可奉告
 qq:         2042136767
@@ -55,11 +55,8 @@ def functionList(*args, **kwargs):
 @Event.messageGroup()
 @Mapping.prefix("查看功能")
 def functionSee(*args, **kwargs):
-    kwargs: dict = kwargs.get("kv")
-    if type(kwargs) != dict: 
-        response.text.append("出现未知错误")
-        return None
-        
+    kwargs.update(kwargs.get("kv"))
+
     title = kwargs.get("message")
 
     plugins = applicationContext.plugins.get("cq")

@@ -1,7 +1,7 @@
 """
 author:     R
 encoding:   utf-8
-title:      XX插件
+title:      解析插件
 version:    1.0
 introduce:  无可奉告
 qq:         2042136767
