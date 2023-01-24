@@ -34,3 +34,35 @@ class StringUtil:
 
         if mode == 1: return tmpA[:length] == tmpB[:length]
         if mode == 2: return tmpA[-length:] == tmpB[-length:]
+
+
+
+import os
+# TODO: 暂时摆在这里
+class PathUtil:
+    '''
+    # 获取当前目录
+    print(os.getcwd())
+    print(os.path.dirname(__file__))
+    print(os.path.abspath(os.path.dirname(__file__)))
+
+    # 获取上级目录
+    print(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
+    print(os.path.abspath(os.path.dirname(os.getcwd())))
+    print(os.path.abspath(os.path.join(os.getcwd(), "..")))
+
+    # 获取上上级目录
+    print(os.path.abspath(os.path.join(os.getcwd(), "../..")))
+
+    # 获取上上上级目录
+    print(os.path.abspath(os.path.join(os.getcwd(), "../../..")))
+
+    # 以此类推...
+    '''
+    @staticmethod
+    def getcwd():
+        return os.getcwd()
+    
+    @staticmethod
+    def getFile():
+        return __file__

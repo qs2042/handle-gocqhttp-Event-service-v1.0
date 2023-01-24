@@ -9,6 +9,8 @@ class ApplicationContext:
         
         # 配置文件
         self.bootstrap = {}
+
+        
         
     def loadPlugins(self):
         self.plugins = {

@@ -77,7 +77,8 @@ class Server:
             pluginName = StringUtil.splitToString(i)
 
             # 动态导入插件
-            plugin = importlib.import_module(".", f"cq.plugins.{pluginName}")
+            # plugin = importlib.import_module(".", f"cq.plugins.{pluginName}")
+            plugin = importlib.import_module(f"cq.plugins.{pluginName}")
 
             # 解析插件信息
             pluginInfo = PythonUtil.analysisDoc(plugin.__doc__)
@@ -92,7 +93,8 @@ class Server:
             pluginName = StringUtil.splitToString(i)
 
             # 动态导入插件
-            plugin = importlib.import_module(".", f"h5.plugins.{pluginName}")
+            # plugin = importlib.import_module(".", f"h5.plugins.{pluginName}")
+            plugin = importlib.import_module(f"h5.plugins.{pluginName}")
 
             # 解析插件信息
             pluginInfo = PythonUtil.analysisDoc(plugin.__doc__)
