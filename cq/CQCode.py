@@ -16,7 +16,7 @@ class CQCode:
     @staticmethod
     def face(id:str):
         # https://github.com/kyubotics/coolq-http-api/wiki/%E8%A1%A8%E6%83%85-CQ-%E7%A0%81-ID-%E8%A1%A8
-        if not id.isdigit():
+        if id ==None or not id.isdigit():
             id = random.randint(0, 221)
         id = int(id)
         if id < 0 or id > 221:

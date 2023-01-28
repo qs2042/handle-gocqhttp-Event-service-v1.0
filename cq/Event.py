@@ -150,11 +150,13 @@ class Event:
 
 
     def funMetaEvent(self):
+        data = self.messageBean.raw_data
         self.requestContext.isLog = False
         # 轮询心跳事件
-        #if data.get("meta_event_type") == "heartbeat":
-        #    self.requestContext.isLog = False
-        #    isTrigger = True
+        if data.get("meta_event_type") == "heartbeat":
+            # self.requestContext.isLog = False
+            isTrigger = True
+        SocketUtil.sendAll(self.request, self.response)
         return False
 
     def funNotice(self):
@@ -241,6 +243,7 @@ class Event:
 
             # 循环方法列表
             for methodName in l:
+                # print("methodName")
                 method: Data = r.getAttribute(methodName)
                 meta = method.get("0")
                 event = method.get("1")
@@ -252,6 +255,8 @@ class Event:
                 # 1.判断事件信息是否和CQ事件对上
                 if event == None: continue
 
+                # TODO: 1.5 判断func是否为mapping
+
                 # 2.调用外层的mapping
                 res: Data = func(msg=data.get("message"))
 
@@ -262,6 +267,8 @@ class Event:
 
                 # 4.mapping执行成功
                 status = res.func(kv = res.kwargs)
+
+                # 5.mapping状态码
                 # True=执行成功, False=执行失败, None=继续往下执行
                 if status == False: 
                     #self.log.info(f"执行失败(101) -> {plugin.__name__} -> {methodName} -> {res.kwargs}")
@@ -274,7 +281,7 @@ class Event:
                 if status == True:
                     print(f"{methodName}: {status}")
                     #self.log.info(f"执行成功(200) -> {plugin.__name__} -> {methodName} -> {res.kwargs}")
-                    # break 这个只会跳出一层循环
+                    # 用 break 的话只会跳出一层循环, 无法跳出两层
                     return None
         # 打印日志
         self.showDatabaseMessage(data)

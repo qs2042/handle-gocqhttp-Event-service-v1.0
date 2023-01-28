@@ -1,7 +1,7 @@
 """
 author:     R
 encoding:   utf-8
-title:      group插件
+title:      群管插件
 version:    1.0
 introduce:  无可奉告
 functions:  禁我 [number]
@@ -46,21 +46,27 @@ from cq.API import API as RQAPI
 @Mapping.prefix("禁我")
 def banMe(*args, **kwargs):
     kwargs.update(kwargs.get("kv"))
-    
-    message = kwargs.get("message")
+    message: str = kwargs.get("message")
+    params: list = kwargs.get("params")
+
     groupId = messageBean.group_id
     userId = messageBean.user_id
 
     if groupId == None:
         response.text.append("该功能仅限于群聊使用")
         return True
-
-    time = 0
-    try:
-        time = int(message)
-        if time <= 30: time = 400
-    except:
+    
+    time = None
+    if len(params) == 0:
         time = random.randint(30, 240)
+    if len(params) >= 1:
+        tmp: str = params[0]
+        isPositiveInt = tmp.isdigit()
+        if isPositiveInt: 
+            time = int(tmp)
+            if time <= 30: time = 400
+        else: 
+            time = random.randint(30, 240)
 
     response.text.append(f"已禁言{time}秒")
 

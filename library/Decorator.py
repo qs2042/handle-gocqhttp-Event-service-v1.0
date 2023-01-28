@@ -123,6 +123,10 @@ class Mapping:
             return wrapper
         return decorator
     
+    # TODO: 按照什么符号进行分割, 设置分割后的参数数量(不足就报错), 传进去一数组
+    # prefix("测试", " ", ["a", "b", "c"]) -> test("测试 1 2 3")   -> a=1 b=2 c=3
+    # prefix("测试", " ", ["a", "b", "c"]) -> test("测试 1 2")     -> error
+    # prefix("测试", " ", ["a", "b", "c"]) -> test("测试 1 2 3 4") -> a=1 b=2 c=3
     @staticmethod
     def prefix(command, separator=" ", *args, **kwargs):
         def decorator(func):
@@ -143,7 +147,10 @@ class Mapping:
                     if i == msg[:len(i)]:
                         kwargs["value"] = True
                         kwargs["message"] = f"{msg[len(i):]}".strip()
-                        kwargs["params"] = f"{msg[len(i):]}".strip().split(separator)
+                        params = f"{msg[len(i):]}".strip().split(separator)
+                        if "" in params:
+                            params.remove("")
+                        kwargs["params"] = params
                 
                 return Data(100, 2, func, args, kwargs, "匹配: 前缀")
             return wrapper

@@ -55,6 +55,10 @@ test: 增删改查
 {select}
 
 """)
+
+print(su.execute(insert, True))
+su.commit()
+
 su.close()
 
 

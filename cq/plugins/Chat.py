@@ -48,16 +48,15 @@ def chatThesaurus(tmp:str):
         "中午好": "中午好,吃午饭没呀",
         "晚上好": "晚上好,我去睡觉觉啦",
     }
-    result = data.get(tmp)
-    return False if result == None else result
+    return data.get(tmp)
 
 def chatTuLing123(tmp:str):
     url = "http://openapi.tuling123.com/openapi/api/v2"
 
-    apikey = applicationContext.bootstrap.get("tu_ling_apikey")
+    apikey = applicationContext.getBootstrap("chat", "tu_ling_api_key")
     if apikey == None or apikey == '': 
         print("您还未填写图灵123的apikey, 无法使用该功能\n")
-        return False
+        return None
     
     params = {
         "reqType": "0",
@@ -73,12 +72,13 @@ def chatTuLing123(tmp:str):
     }
     
     res = requests.post(url, data=json.dumps(params))
+    if res.status_code != 200: return None
 
     data = json.loads(res.text)
     
     answer = data["results"][0]["values"]["text"]
 
-    return False if answer == "请求次数超限制!" else answer
+    return None if answer == "请求次数超限制!" else answer
 
 def chatQingYunKe(tmp:str):
     url = "http://api.qingyunke.com/api.php"
@@ -88,15 +88,17 @@ def chatQingYunKe(tmp:str):
         "msg": tmp,
     }
     res = requests.get(url, params=params)
-    if res.status_code != 200: return False
+    if res.status_code != 200: return None
 
     data = json.loads(res.text)
 
     answer: str = data["content"]
 
+    # TODO: 这里聊天词替换
     if type(answer) == str:
-        answer.replace("夏夏的宠物", "你的小晴")
-        answer.replace("菲菲", "小晴")
+        answer = answer.replace("夏夏的宠物", "你的小晴")
+        answer = answer.replace("菲菲", "小晴")
+        answer = answer.replace("吴珂", "小晴")
 
     return answer
 
@@ -105,15 +107,20 @@ def chatQingYunKe(tmp:str):
 @Mapping.prefix(["#", "聊天"])
 def chat(*args, **kwargs):
     kwargs.update(kwargs.get("kv"))
+    message: str = kwargs.get("message")
+    params: list = kwargs.get("params")
 
-    message = kwargs.get("message")
-    if len(message) == 0: return False
+    if len(params) == 0: 
+        response.text.append("缺少参数")
+        return False
+    
+    msg = params[0]
+    result = None
 
-    isTrigger = False
-    if isTrigger==False: isTrigger = chatThesaurus(message)
-    if isTrigger==False: isTrigger = chatTuLing123(message)
-    if isTrigger==False: isTrigger = chatQingYunKe(message)
-    if isTrigger==False: return None
+    if result==None: result = chatThesaurus(msg)
+    if result==None: result = chatTuLing123(msg)
+    if result==None: result = chatQingYunKe(msg)
+    if result==None: return None
 
-    response.text.append(isTrigger)
+    response.text.append(result)
     return True

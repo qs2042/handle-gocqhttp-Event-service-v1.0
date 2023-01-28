@@ -70,6 +70,10 @@ def testAll(*args, **kwargs):
 @Event.messageGroup()
 @Mapping.prefix(".testP")
 def testPrefix(*args, **kwargs):
+    kwargs.update(kwargs.get("kv"))
+    message: str = kwargs.get("message")
+    params: list = kwargs.get("params")
+
     response.text.append(".testPrefix: 测试成功")
     return True
 

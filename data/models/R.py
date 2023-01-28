@@ -2,7 +2,7 @@ from library.SqliteUtil import POJO, POJOField
 
 class t_user(POJO):
     def __init__(self) -> None:
-        self.id = POJOField.integerField()
+        self.id = POJOField.idField()
         self.username = POJOField.charField(20)
         self.password = POJOField.charField(20)
         self.age = POJOField.integerField()

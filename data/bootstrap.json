@@ -1,9 +1,14 @@
 {
-    "admin": 2042136767,
-    "tu_ling_apikey": "",
-
-    "mysql_url": "",
-    "mysql_port": "",
-    "mysql_username": "",
-    "mysql_password": ""
+    "robot": {
+        "admin": 2042136767
+    },
+    "chat": {
+        "tu_ling_api_key": ""
+    },
+    "mysql": {
+        "url": "",
+        "port": "",
+        "username": "",
+        "password": ""
+    }
 }

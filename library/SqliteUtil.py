@@ -182,16 +182,48 @@ class POJOMeta:
     
 class POJOField:
     @staticmethod
-    def charField(max_length=255):
-        return f"VARCHAR({max_length})"
+    def __hanlderNull(string: str, isNull=False):
+        if not isNull: return string
+        return f"{string} NOT NULL"
 
     @staticmethod
-    def integerField():
-        return "INT"
+    def idField():
+        return "INTEGER NOT NULL [PK]"
+    
+    @staticmethod
+    def textField(isNull=False):
+        value = "TEXT"
+        return POJOField.__hanlderNull(value, isNull)
 
     @staticmethod
-    def tinyInt(val):
-        return f"TinyInt({val})"
+    def charField(max_length=255, isNull=False):
+        value = f"VARCHAR({max_length})"
+        return POJOField.__hanlderNull(value, isNull)
+
+    @staticmethod
+    def integerField(isNull=False):
+        value = "INT"
+        return POJOField.__hanlderNull(value, isNull)
+
+    @staticmethod
+    def tinyInt(val, isNull=False):
+        value = f"TinyInt({val})"
+        return POJOField.__hanlderNull(value, isNull)
+    
+    @staticmethod
+    def blobField(isNull=False):
+        value = "BLOB"
+        return POJOField.__hanlderNull(value, isNull)
+
+    @staticmethod
+    def realField(isNull=False):
+        value = "REAL"
+        return POJOField.__hanlderNull(value, isNull)
+
+    @staticmethod
+    def numericField(isNull=False):
+        value = "NUMERIC"
+        return POJOField.__hanlderNull(value, isNull)
 
 class POJO:
     def __init__(self) -> None:
@@ -285,6 +317,10 @@ class SqliteUtil:
             # 删除POJO父类(TODO: 这里还要删除, 不是POJO子类的类)
             try: models.pop("POJO")
             except: models = {}
+
+            # 删除POJO字段
+            try: models.pop("POJOField")
+            except: models = {}
             
             # 加载
             self.models[pluginName] = {
@@ -300,7 +336,8 @@ class SqliteUtil:
                 tableName = j
                 pojo: POJO = m.get(j)
                 sql = self.create(pojo())
-                print(f"正在生成数据表 -> {tableName} -> {sql}")
+                res = self.execute(sql, True)
+                print(f"正在生成数据表 -> {tableName} -> {sql} -> {res}")
 
     def execute(self, sql: str, isReturn=False):
         '''执行SQL'''
@@ -322,9 +359,21 @@ class SqliteUtil:
         self.conn.close()
 
     def create(self, pojo: POJO):
+        isPrimaryKey = False
         kvList = []
         for i in pojo._meta.fields:
-            kvList.append(f"{i} {pojo._meta.fields.get(i)}")
+            k: str = i
+            v: str = pojo._meta.fields.get(i)
+
+            # 如果有特殊标记的话
+            if "[PK]" in v: 
+                isPrimaryKey = k
+                v = v.replace("[PK]", "").strip()
+            kvList.append(f"{k} {v}")
+
+        # 判断有没有主键ID
+        if isPrimaryKey != False: kvList.append(f"primary key({isPrimaryKey})")
+
         sql = f"CREATE TABLE {pojo._meta.tableName} ({', '.join(kvList)})"
 
         return sql
@@ -347,7 +396,8 @@ class SqliteUtil:
 
             keys.append(key)
             values.append(value)
-        return f"INSERT INTO ({', '.join(keys)}) VALUES ({', '.join(values)})"
+
+        return f"INSERT INTO {pojo._meta.tableName}({', '.join(keys)}) VALUES ({', '.join(values)})"
     
     def delete(self, pojo: POJO, wrapper: Wrapper=None):
         sql = f"DELETE FROM {pojo._meta.tableName}"

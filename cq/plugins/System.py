@@ -56,16 +56,25 @@ def functionList(*args, **kwargs):
 @Mapping.prefix("查看功能")
 def functionSee(*args, **kwargs):
     kwargs.update(kwargs.get("kv"))
+    message: str = kwargs.get("message")
+    params: list = kwargs.get("params")
 
-    title = kwargs.get("message")
+    if len(params) == 0:
+        response.text.append("缺少参数")
+        return True
+    
+    title = params[0]
 
+    # 获取插件列表
     plugins = applicationContext.plugins.get("cq")
     for plugin in plugins:
+        # 解析doc
         data:dict = PythonUtil.analysisDoc(plugin.__doc__)
         if title == data.get("title"):
             response.text.append(f"已为您获取{title}功能的介绍")
             response.text.append(f"[{title}]\n作者:{data.get('author')}\n介绍:{data.get('introduce')}\n功能列表:{data.get('functions')}")
+            return True
     
-    if len(response.text) == 0:
-        response.text.append(f"{title}功能不存在, 请重新输入")
+    response.text.append(f"{title}功能不存在, 请重新输入")
+    return True
 

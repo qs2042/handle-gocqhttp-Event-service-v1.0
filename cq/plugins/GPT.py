@@ -99,32 +99,33 @@ def _GPT(InPut):
         return False
 
 @Event.messageGroup()
-@Mapping.prefix(".AI")
+@Mapping.prefix([".AI", ".ai"])
 def ai(*args, **kwargs):
-    if kwargs.get("114151") == None:
-        response.text.append("目前GPT插件暂时下架")
-        return None
-    # 获取截取指令后的参数
     kwargs.update(kwargs.get("kv"))
-    text = kwargs.get('message')
+    message: str = kwargs.get("message")
+    params: list = kwargs.get("params")
 
     # 数据校验
-    if len(text) <= 1: return response.text.append("参数不可小于等于1")
+    if len(params) == 0: 
+        response.text.append("缺少参数")
+        return False
+    
+    if len(params) >= 1:
+        response.text.append("目前GPT插件暂时下架")
+        return False
 
     # 使用API主动发送消息
-    # rqAPI = RQAPI()
-    # rqAPI.sendMessage(messageBean.raw_data.get("message_type"), messageBean.user_id, messageBean.group_id, "该功能需要等待1~2分钟")
+    rqAPI = RQAPI()
+    rqAPI.sendMessage(messageBean.raw_data.get("message_type"), messageBean.user_id, messageBean.group_id, "该功能需要等待1~2分钟")
 
     # 功能
     try:
-        r = _GPT(text)
+        r = _GPT(message)
 
         # 将消息交给框架统一进行发送
         if r == False: response.text.append("出现网络错误, 请过会重新尝试")
         if r != False: response.text.append(r)
     except:
-        response.text.append("出现未知错误, 请过会重新尝试")
-
-    
+        response.text.append("代码出现异常, 请联系管理员")
 
     return True
