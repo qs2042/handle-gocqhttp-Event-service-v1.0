@@ -110,9 +110,7 @@ def chat(*args, **kwargs):
     message: str = kwargs.get("message")
     params: list = kwargs.get("params")
 
-    if len(params) == 0: 
-        response.text.append("缺少参数")
-        return False
+    if len(params) == 0: return False
     
     msg = params[0]
     result = None

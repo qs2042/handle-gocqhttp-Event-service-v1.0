@@ -41,8 +41,11 @@ gvl = {
 @Event.messageGroup()
 @Mapping.approved()
 def aaa(*args, **kwargs):
-    message = request.data.get('message')
-    # TODO: 后续设置一个等级评定, 比如警告, 禁言, 踢出群, 撤回等
+    '''
+    检测关键词
+    TODO: 后续设置一个等级评定, 比如警告, 禁言, 踢出群, 撤回等
+    '''
+    message = messageBean.message
     l = [
         "下单方法", "长按复制这条信息", "打开手机淘宝", "傻逼", "弱智"
     ]

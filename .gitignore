@@ -1,4 +1,7 @@
 #
 cq/plugins/Private.py
+cq/plugins/Template.py
+
+#
 data/db.sqlite3
 data/models

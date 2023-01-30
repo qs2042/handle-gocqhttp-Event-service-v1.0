@@ -61,8 +61,7 @@ def banMe(*args, **kwargs):
         time = random.randint(30, 240)
     if len(params) >= 1:
         tmp: str = params[0]
-        isPositiveInt = tmp.isdigit()
-        if isPositiveInt: 
+        if tmp.isdigit(): 
             time = int(tmp)
             if time <= 30: time = 400
         else: 

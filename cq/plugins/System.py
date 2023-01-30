@@ -39,14 +39,14 @@ gvl = {
 }
 
 from library.PythonUtil import PythonUtil
-
+from library.PythonEnhanceUtil import PythonEnhanceUtil
 
 @Event.messageGroup()
 @Mapping.all([".help", "功能列表"])
 def functionList(*args, **kwargs):
     plugins = applicationContext.plugins.get("cq")
     s = ""
-    for i,plugin in enumerate(plugins):
+    for i, plugin in enumerate(plugins):
         data:dict = PythonUtil.analysisDoc(plugin.__doc__)
         s += f"{i+1}.{data.get('title')}v{data.get('version')} ({data.get('author')}) \n"
     response.text.append(s[:-1])
@@ -59,20 +59,20 @@ def functionSee(*args, **kwargs):
     message: str = kwargs.get("message")
     params: list = kwargs.get("params")
 
-    if len(params) == 0:
-        response.text.append("缺少参数")
+    title = PythonEnhanceUtil.getByList(params, 0)
+    if title == None:
+        response.text.append("缺少参数: functionName")
         return True
     
-    title = params[0]
-
     # 获取插件列表
     plugins = applicationContext.plugins.get("cq")
-    for plugin in plugins:
+    for i, plugin in enumerate(plugins):
         # 解析doc
         data:dict = PythonUtil.analysisDoc(plugin.__doc__)
-        if title == data.get("title"):
+        # 判断
+        if title == data.get("title") or str(i+1) == title:
             response.text.append(f"已为您获取{title}功能的介绍")
-            response.text.append(f"[{title}]\n作者:{data.get('author')}\n介绍:{data.get('introduce')}\n功能列表:{data.get('functions')}")
+            response.text.append(f"[{data.get('title')}]\n作者:{data.get('author')}\n介绍:{data.get('introduce')}\n功能列表:{data.get('functions')}")
             return True
     
     response.text.append(f"{title}功能不存在, 请重新输入")

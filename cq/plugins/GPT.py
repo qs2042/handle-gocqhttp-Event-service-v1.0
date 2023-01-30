@@ -107,12 +107,14 @@ def ai(*args, **kwargs):
 
     # 数据校验
     if len(params) == 0: 
-        response.text.append("缺少参数")
+        response.text.append("缺少参数: msg")
         return False
     
     if len(params) >= 1:
         response.text.append("目前GPT插件暂时下架")
         return False
+    
+    msg = params[0]
 
     # 使用API主动发送消息
     rqAPI = RQAPI()
@@ -120,8 +122,7 @@ def ai(*args, **kwargs):
 
     # 功能
     try:
-        r = _GPT(message)
-
+        r = _GPT(msg)
         # 将消息交给框架统一进行发送
         if r == False: response.text.append("出现网络错误, 请过会重新尝试")
         if r != False: response.text.append(r)

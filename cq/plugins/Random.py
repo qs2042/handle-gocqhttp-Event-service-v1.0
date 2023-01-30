@@ -40,6 +40,7 @@ gvl = {
 
 import random, requests
 from bs4 import BeautifulSoup
+from library.PythonEnhanceUtil import PythonEnhanceUtil
 
 # 选择困难症
 @Event.messageGroup()
@@ -51,7 +52,7 @@ def helpMeChoose(*args, **kwargs):
 
     paramsLen = len(params)
     if paramsLen == 0:
-        response.text.append("缺少参数")
+        response.text.append("缺少参数: value...")
         return None
     if paramsLen == 1:
         response.text.append("总共1个选择, 就不帮您选啦")
@@ -69,17 +70,7 @@ def roll(*args, **kwargs):
     message: str = kwargs.get("message")
     params: list = kwargs.get("params")
 
-    number = None
-
-    # 如果没有携带参数
-    if len(params) == 0: number = 10
-
-    # 如果携带的参数不是正数
-    tmp: str = params[0]
-    if not tmp.isdigit(): number = 10
-    else: number = int(tmp)
-    
-    # 如果携带的参数过小
+    number = PythonEnhanceUtil.getByList(params, 0, int, 10)
     if number <= 0: number = 10
 
     response.text.append(f"投掷结果为: {random.randint(0, number)}")
@@ -232,18 +223,6 @@ def rollHusbandRaw(*args, **kwargs):
     ]
     response.text.append("您上辈子的老公为: %s" % data[random.randint(0,len(data)-1)])
     return True
-
-# 概率
-def __probability(self, number=10, percentage=2):
-    data = {"True" : 0, "False" : 0}
-    for i in range(0, number):
-        lucky = random.randint(0, 100 * 10) # 概率公式
-
-        if lucky <= percentage * 10:
-            data["True"] += 1
-        else:
-            data["False"] += 1
-    return data
 
 # 随机老公/老婆(取自群友)
 # 随机老婆/老公(动漫角色)
